@@ -7,6 +7,7 @@ import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.LinearLayout
 import android.widget.TextView
 import org.jetbrains.anko.*
@@ -24,9 +25,20 @@ class MainActivity : AppCompatActivity() {
 }
 
 class MainUI(val listAdapter: Adapter) : AnkoComponent<MainActivity> {
+    companion object {
+        val stationIds = mapOf<String, String>(
+                "Canary Wharf" to "940GZZDLCAN",
+                "Tower Gateway" to "940GZZDLTWG",
+                "Shadwell" to "940GZZDLSHA"
+        )
+    }
+
     override fun createView(ui: AnkoContext<MainActivity>): View = with(ui) {
         verticalLayout {
             val btn = button("Get arrivals")
+            val station = spinner {
+                adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, stationIds.keys.toList())
+            }
 
             val list = recyclerView {
                 val orientation = LinearLayout.VERTICAL
@@ -35,7 +47,8 @@ class MainUI(val listAdapter: Adapter) : AnkoComponent<MainActivity> {
             }
 
             btn.onClick {
-                val arrs = TflApi.service.getArrivals("940GZZDLCAN")
+                Log.d("mytag", station.selectedItem.toString())
+                val arrs = TflApi.service.getArrivals(stationIds.get(station.selectedItem)!!)
                 arrs.enqueue(object : Callback<List<Arrival>> {
                     override fun onFailure(call: Call<List<Arrival>>?, t: Throwable?) {
                         Log.d("mytag", "FAIL")
